@@ -1,0 +1,64 @@
+---
+
+- name: Generate logstash peer certificates
+  hosts: 127.0.0.1
+  connection: local
+  vars_files:
+    - vars/main.yml
+
+  tasks:
+
+  - name: Generate peer certificate private key
+    become: false
+    local_action:
+      module: openssl_privatekey
+      path: "{{ data_ssl_client_dir }}/{{ data_ssl_client_key | regex_replace('^(.*)\\.(.*)$', '\\1-rsa.\\2') }}"
+      size: 2048
+    register: create_peer_key
+    tags:
+      - certificates
+      - client
+
+  - name: Convert RSA key to PKCS8 format
+    local_action:
+      module: command
+      cmd: "openssl pkcs8 -topk8 -in {{ data_ssl_client_dir }}/{{ data_ssl_client_key | regex_replace('^(.*)\\.(.*)$', '\\1-rsa.\\2') }} -out {{ data_ssl_client_dir }}/{{ data_ssl_client_key }} -nocrypt"
+    when: create_peer_key.changed
+
+  - name: Generate peer certificate CSR
+    become: false
+    local_action:
+      module: openssl_csr
+      path: "{{ data_ssl_client_dir }}/{{ data_ssl_client_csr }}"
+      privatekey_path: "{{ data_ssl_client_dir }}/{{ data_ssl_client_key }}"
+      common_name: "client_certificate"
+      basic_constraints_critical: False
+      basic_constraints:
+        - CA:FALSE 
+      key_usage_critical: True
+      extended_key_usage_critical: False
+      key_usage:
+        - digitalSignature
+        - nonRepudiation
+        - keyEncipherment
+        - keyAgreement
+      extended_key_usage:
+        - clientAuth
+        - serverAuth
+      force: false
+    tags:
+      - certificates
+      - client
+
+  - name: Generate peer certificate
+    become: false
+    local_action:
+      module: openssl_certificate
+      path: "{{ data_ssl_client_dir }}/{{ data_ssl_client_cert }}"
+      csr_path: "{{ data_ssl_client_dir }}/{{ data_ssl_client_csr }}"
+      ownca_path: "{{ data_ssl_ca_dir }}/{{ data_ssl_ca_cert }}"
+      ownca_privatekey_path: "{{ data_ssl_ca_dir }}/{{ data_ssl_ca_key }}"
+      provider: ownca
+      force: false
+    tags:
+      - certificates

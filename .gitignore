@@ -1,0 +1,5 @@
+files/ca/*.crt
+files/ca/*.key
+files/cli/*.key
+files/cli/*.csr
+files/cli/*.crt

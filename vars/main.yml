@@ -1,0 +1,9 @@
+---
+
+data_ssl_client_dir: files/cli
+data_ssl_client_key: client.key
+data_ssl_client_csr: client.csr
+data_ssl_client_cert: client.crt
+data_ssl_ca_dir: files/ca
+data_ssl_ca_cert: ESca.crt
+data_ssl_ca_key: ESca.key
