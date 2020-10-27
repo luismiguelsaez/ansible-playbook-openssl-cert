@@ -32,16 +32,12 @@
       path: "{{ data_ssl_client_dir }}/{{ data_ssl_client_csr }}"
       privatekey_path: "{{ data_ssl_client_dir }}/{{ data_ssl_client_key }}"
       common_name: "client_certificate"
-      basic_constraints_critical: False
+      basic_constraints_critical: True
       basic_constraints:
         - CA:FALSE 
-      key_usage_critical: True
+      key_usage_critical: False
+      key_usage: []
       extended_key_usage_critical: False
-      key_usage:
-        - digitalSignature
-        - nonRepudiation
-        - keyEncipherment
-        - keyAgreement
       extended_key_usage:
         - clientAuth
         - serverAuth
